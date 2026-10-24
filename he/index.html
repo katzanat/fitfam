@@ -353,6 +353,38 @@ try{state=JSON.parse(localStorage.getItem(KEY));}catch(e){state=null;}
 if(!state||!state.kids){state={active:'shira',kids:{shira:fresh(),yonatan:fresh()}};}
 ['shira','yonatan'].forEach(function(k){if(!state.kids[k])state.kids[k]=fresh();});
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+/* ---------- family sync (Supabase) ---------- */
+var SB_URL='https://ogxebejcedpteknqwkbb.supabase.co',SB_KEY='sb_publishable_6PX3Lh3Z4bwOrewKU8LBPw_K1LB9t-j',FAMILY='Z5L84jFi4UVbGMqkud4kVH5y';
+if(!state.pending)state.pending={};
+['shira','yonatan'].forEach(function(k){
+  var K=state.kids[k];
+  if(K.ts===undefined){K.ts=1;if(Object.keys(K.done).length)state.pending[k]=true;}
+});
+function rpc(fn,body){
+  return fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){if(!r.ok)throw new Error(r.status);return r.status===204?null:r.json();});
+}
+function push(k){
+  var K=state.kids[k],ts=K.ts;
+  rpc('fitfam_put',{p_family:FAMILY,p_kid:k,p_data:K,p_ts:ts})
+    .then(function(){if(state.kids[k].ts===ts){delete state.pending[k];save();}}).catch(function(){});
+}
+function touch(k){state.kids[k].ts=Date.now();state.pending[k]=true;save();push(k);}
+function validKid(d){return d&&typeof d.start==='string'&&Array.isArray(d.days)&&d.done&&typeof d.done==='object';}
+var pulling=false;
+function pull(){
+  if(pulling)return;pulling=true;
+  rpc('fitfam_get',{p_family:FAMILY}).then(function(rows){
+    var changed=false;
+    (rows||[]).forEach(function(r){
+      var L=state.kids[r.kid];
+      if(L&&validKid(r.data)&&r.ts>(L.ts||0)){r.data.ts=r.ts;state.kids[r.kid]=r.data;delete state.pending[r.kid];changed=true;}
+    });
+    Object.keys(state.pending).forEach(push);
+    if(changed){save();render();}
+  }).catch(function(){}).then(function(){pulling=false;});
+}
 var ui={view:'today',sel:null,pop:null};
 
 /* ---------- program logic ---------- */
@@ -507,7 +539,7 @@ function viewSettings(){
     h+='</div><div class="hint'+(n!==4?' bad':'')+'">'+(n===4?'הסדר בכל שבוע: כוח, ריצה, רגליים, ריצה.':'נבחרו '+n+' ימים. צריך בדיוק 4.')+'</div>'+
       '<button class="reset" data-act="reset" data-k="'+k+'">איפוס ההתקדמות של '+KIDS[k].name+'</button></div>';
   });
-  h+='<p class="note">ההתקדמות נשמרת בדפדפן של המכשיר הזה.</p>';
+  h+='<p class="note">ההתקדמות מסתנכרנת בין כל המכשירים של המשפחה.</p>';
   return h;
 }
 
@@ -533,7 +565,7 @@ document.addEventListener('click',function(ev){
     if(d[j])delete d[j];else d[j]=true;
     var on=!!d[j],now=complete(id,s);
     ui.pop=(!was&&now)?i:null;
-    save();render();
+    touch(id);render();
     if(on){
       try{if(navigator.vibrate)navigator.vibrate(12);}catch(e){}
       var nb=document.querySelector('.check[data-i="'+i+'"][data-j="'+j+'"]');
@@ -544,20 +576,24 @@ document.addEventListener('click',function(ev){
   if(a==='day'){
     var k=b.dataset.k,dd=+b.dataset.d,K2=state.kids[k],ix=K2.days.indexOf(dd);
     if(ix>-1)K2.days.splice(ix,1);else K2.days.push(dd);
-    K2.days.sort();save();render();return;
+    K2.days.sort();touch(k);render();return;
   }
   if(a==='reset'){
     var k3=b.dataset.k;
-    if(confirm('למחוק את כל הסימונים והנקודות של '+KIDS[k3].name+'?')){state.kids[k3].done={};save();render();}
+    if(confirm('למחוק את כל הסימונים והנקודות של '+KIDS[k3].name+'?')){state.kids[k3].done={};touch(k3);render();}
     return;
   }
 });
 document.addEventListener('change',function(ev){
   var t=ev.target;
-  if(t.dataset&&t.dataset.start&&t.value){state.kids[t.dataset.start].start=t.value;save();render();}
+  if(t.dataset&&t.dataset.start&&t.value){state.kids[t.dataset.start].start=t.value;touch(t.dataset.start);render();}
 });
 
 render();
+pull();
+document.addEventListener('visibilitychange',function(){if(!document.hidden)pull();});
+window.addEventListener('online',pull);
+setInterval(function(){if(!document.hidden)pull();},20000);
 })();
 </script>
 </body>
