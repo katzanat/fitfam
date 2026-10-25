@@ -325,7 +325,9 @@ var PROGRAM={
     R:{
       warm:'5 min brisk walk', cool:'5 min walk and light stretching',
       cue:'A pace where you can talk, on a soft surface. Back hurts? Stop and tell Mom.',
-      weeks:['6 rounds: 1 min run, 2 min walk','6 rounds: 1.5 min run, 2 min walk','5 rounds: 2 min run, 2 min walk','4 rounds: 3 min run, 2 min walk','3 rounds: 5 min run, 2 min walk','2 rounds: 8 min run, 2 min walk','12 min run, 2 min walk, 6 min run','18 min continuous easy run','22 min continuous easy run','2 miles at a comfortable pace, no watch']
+      weeks:['6 rounds: 1 min run, 2 min walk','6 rounds: 1.5 min run, 2 min walk','5 rounds: 2 min run, 2 min walk','4 rounds: 3 min run, 2 min walk','3 rounds: 5 min run, 2 min walk','2 rounds: 8 min run, 2 min walk','12 min run, 2 min walk, 6 min run','18 min continuous easy run','22 min continuous easy run','20 min easy run, no watch'],
+      speed:['6 rounds: 1 min run, 2 min walk','6 rounds: 1.5 min run, 2 min walk','8 rounds: 30 sec quick run, 90 sec walk','6 rounds: 1 min quick run, 2 min walk','5 rounds: 2 min at mile-test pace, 2 min walk','4 laps of a track (400 m) quick, 2 min walk between','15 min easy run with 4 × 30 sec faster in the middle','3 rounds: half a mile at mile-test pace, 3 min walk','Practice test: 1 mile, timed','Practice test: 2 miles, timed'],
+      speedCue:'Stamina and speed for the school run tests. Quick means breathing hard but in control, not an all-out sprint. Walk breaks are real rest.'
     }
   },
   yonatan:{
@@ -499,7 +501,7 @@ function sessions(id){
 function phaseOf(w){return w<=3?0:(w<=6?1:2);}
 function items(id,s){
   var P=PROGRAM[id];
-  if(s.type==='R'){var r=P.R;return [['walk',r.warm],['run',r.weeks[s.week-1],r.cue],['walk',r.cool]];}
+  if(s.type==='R'){var r=P.R,sp=r.speed&&s.i%4===3;return [['walk',r.warm],['run',(sp?r.speed:r.weeks)[s.week-1],sp?r.speedCue:r.cue],['walk',r.cool]];}
   return P[s.type][phaseOf(s.week)];
 }
 function doneMap(id,i){return state.kids[id].done[i]||{};}
