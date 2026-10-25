@@ -115,6 +115,18 @@ button{font:inherit;color:inherit;cursor:pointer}
 .win b{font-family:"Secular One",Arial,sans-serif;font-weight:400;font-size:20px;display:block}
 .win span{color:var(--muted);font-size:15px}
 .win.pop{animation:pop .5s cubic-bezier(.2,1.5,.4,1)}
+.fig.pet{display:grid;place-items:center;font-size:52px;line-height:1}
+@media (prefers-reduced-motion:no-preference){.fig.pet span{animation:bob 1.6s ease-in-out infinite}.ex.done .fig.pet span{animation:none}}
+@keyframes bob{50%{transform:translateY(-5px)}}
+.bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.badge{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:12px 4px;border-radius:14px;background:var(--surface-2);border:2px dashed var(--line)}
+.badge span{font-size:34px;line-height:1;filter:grayscale(1);opacity:.35}
+.badge small{font-size:13px;font-weight:700;color:var(--muted);line-height:1.2}
+.badge.on{border:2px solid var(--gold);background:var(--accent-soft)}
+.badge.on span{filter:none;opacity:1}
+.badge.on small{color:var(--ink)}
+.mini{font-size:22px;letter-spacing:2px;margin-bottom:8px}
+
 @keyframes pop{from{transform:scale(.88);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.win.pop,.float{animation:none}.float{display:none}}
 
@@ -385,6 +397,38 @@ function ptEx(id){return JR(id)?1:PT_EX;}
 function ptBonus(id){return JR(id)?2:PT_BONUS;}
 function perLevel(id){return JR(id)?12:PER_LEVEL;}
 
+/* Tamari: an animal for every move, and badges earned from her progress */
+var ANIMALS={rope:'🐰',bridge:'🐈',plank:'🐊',hang:'🐒',birddog:'🦅',kneepush:'🐻',jumpsquat:'🐸',calf:'🦒',squat:'🐼',lunge:'🐘',deadbug:'🐞',run:'🐆'};
+function pet(k,j){var a=k==='walk'?(j===0?'🦕':'🐭'):(ANIMALS[k]||'⭐');return '<div class="fig pet" aria-hidden="true"><span>'+a+'</span></div>';}
+var BN={first:'משימה ראשונה',five:'5 משימות',week:'שבוע מלא',frog:'צפרדע קופצת',monkey:'קופה קטנה',ten:'10 משימות',racer:'צ׳יטה מהירה',twenty:'כוכבת על',all:'אלופה'};
+var BT={title:'התגים שלי',count:function(c,n){return 'נאספו '+c+' מתוך '+n+'. כל משימה מקרבת לתג הבא!';},got:'תג חדש!'};
+var BADGES=[
+  ['first','🌟',function(n){return n.m>=1;}],
+  ['five','🖐️',function(n){return n.m>=5;}],
+  ['week','📅',function(n){return n.week;}],
+  ['frog','🐸',function(n){return (n.t.jumpsquat||0)>=3;}],
+  ['monkey','🐒',function(n){return (n.t.hang||0)>=5;}],
+  ['ten','🏅',function(n){return n.m>=10;}],
+  ['racer','🐆',function(n){return (n.t.run||0)>=5;}],
+  ['twenty','🦄',function(n){return n.m>=20;}],
+  ['all','🏆',function(n){return n.m>=40;}]
+];
+function tally(id){
+  var t={};
+  sessions(id).forEach(function(s){var d=doneMap(id,s.i);items(id,s).forEach(function(it,j){if(d[j])t[it[0]]=(t[it[0]]||0)+1;});});
+  return t;
+}
+function badges(id){
+  var n={m:totalDone(id),t:tally(id),week:false};
+  for(var w=1;w<=10;w++)if(weekDone(id,w)===4)n.week=true;
+  return BADGES.map(function(b){return {id:b[0],icon:b[1],name:BN[b[0]],on:b[2](n)};});
+}
+function badgeCard(id){
+  var bs=badges(id),c=bs.filter(function(b){return b.on;}).length;
+  return '<div class="card"><h2>'+BT.title+'</h2><p>'+BT.count(c,bs.length)+'</p><div class="bgrid">'+
+    bs.map(function(b){return '<div class="badge'+(b.on?' on':'')+'"><span aria-hidden="true">'+b.icon+'</span><small>'+b.name+'</small></div>';}).join('')+'</div></div>';
+}
+
 var KIDS={shira:{name:'שירה',c:'var(--shira)'},yonatan:{name:'יונתן',c:'var(--yonatan)'},tamari:{name:'תמרי',c:'var(--tamari)',junior:true},mom:{name:'אמא',i:'אמ',c:'var(--mom)'},dad:{name:'אבא',i:'אב',c:'var(--dad)'}};
 var DAYN=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
 var TYPES=['A','R','B','R'];
@@ -440,7 +484,7 @@ function pull(){
     if(changed){save();render();}
   }).catch(function(){}).then(function(){pulling=false;});
 }
-var ui={view:'today',sel:null,pop:null};
+var ui={view:'today',sel:null,pop:null,badge:null};
 
 /* ---------- program logic ---------- */
 function sessions(id){
@@ -523,12 +567,13 @@ function sessionView(id,s,fromPlan){
   var h='';
   if(fromPlan)h+='<button class="backbtn" data-act="back">חזרה לאימון של היום</button>';
   h+='<div class="shead"><h2>'+title(id,s.type)+'</h2><div class="meta">'+word(id,'wk')+' '+(s.i+1)+' מתוך 40, '+fmt(s.date)+(s.date===TODAY?' (היום)':'')+'</div></div>';
+  if(ui.badge)h+='<div class="win pop"><div class="pts">'+ui.badge.icon+'</div><div><b>'+BT.got+'</b><span>'+ui.badge.name+'</span></div></div>';
   if(all)h+='<div class="win'+(ui.pop===s.i?' pop':'')+'"><div class="pts">+'+ptBonus(id)+'</div><div><b>'+word(id,'done')+'</b><span>'+word(id,'bonus')+'</span></div></div>';
   h+='<div class="prow"><span>'+c+' מתוך '+its.length+' תרגילים</span><span class="gold">'+pts+' '+word(id,'pts')+'</span></div>';
   h+='<div class="pbar"><i style="width:'+(c/its.length*100)+'%"></i></div>';
   its.forEach(function(it,j){
     var e=EX[it[0]],on=!!d[j];
-    h+='<div class="ex'+(on?' done':'')+'">'+fig(e)+
+    h+='<div class="ex'+(on?' done':'')+'">'+(JR(id)?pet(it[0],j):fig(e))+
       '<div><h3>'+e.n+'</h3><div class="rx">'+it[1]+'</div><div class="cue">'+(it[2]||e.c)+'</div></div>'+
       '<button class="check" data-act="tick" data-i="'+s.i+'" data-j="'+j+'" aria-pressed="'+on+'" aria-label="'+(on?'בוטל סימון':'סימון ביצוע')+': '+e.n+'">'+CHECK+'</button></div>';
   });
@@ -577,6 +622,7 @@ function viewFamily(){
     h+='<div class="fc" style="--c:'+KIDS[k].c+'"><div class="nm">'+KIDS[k].name+'</div>'+
       '<div class="big">'+lvl+'<small>רמה</small></div>'+
       '<dl><dt>'+word(k,'pts')+'</dt><dd>'+p+'</dd><dt>'+word(k,'streak')+'</dt><dd>'+(JR(k)?td:streak(k))+'</dd><dt>השבוע</dt><dd>'+weekDone(k,w)+'/4</dd><dt>סה״כ</dt><dd>'+td+'/40</dd></dl>'+
+      (JR(k)?'<div class="mini" aria-hidden="true">'+badges(k).filter(function(b){return b.on;}).map(function(b){return b.icon;}).join('')+'</div>':'')+
       '<div class="pbar"><i style="width:'+(td/40*100)+'%"></i></div></div>';
   });
   h+='</div><p class="note">הנקודות נספרות על התמדה: כל תרגיל שמסמנים ובונוס על אימון שלם. כל אחד מתחרה בעצמו מאתמול, לא במי שחזק יותר.</p>';
@@ -602,6 +648,7 @@ function render(){
   renderTop();
   var v=ui.view,h;
   if(v==='plan')h=viewPlan();else if(v==='family')h=viewFamily();else if(v==='settings')h=viewSettings();else h=viewToday();
+  if(v!=='plan'&&v!=='family'&&v!=='settings'&&JR(state.active))h+=badgeCard(state.active);
   document.getElementById('view').innerHTML=h;
 }
 
@@ -609,17 +656,19 @@ function render(){
 document.addEventListener('click',function(ev){
   var b=ev.target.closest('[data-act]');if(!b)return;
   var a=b.dataset.act;
-  if(a==='kid'){state.active=b.dataset.k;ui.sel=null;save();render();return;}
-  if(a==='tab'){ui.view=b.dataset.v;ui.sel=null;render();window.scrollTo(0,0);return;}
+  if(a==='kid'){state.active=b.dataset.k;ui.sel=null;ui.badge=null;save();render();return;}
+  if(a==='tab'){ui.view=b.dataset.v;ui.sel=null;ui.badge=null;render();window.scrollTo(0,0);return;}
   if(a==='open'){ui.view='today';ui.sel=+b.dataset.i;render();window.scrollTo(0,0);return;}
   if(a==='back'){ui.sel=null;render();return;}
   if(a==='tick'){
     var id=state.active,i=+b.dataset.i,j=+b.dataset.j,K=state.kids[id];
-    var s=sessions(id)[i];var was=complete(id,s);
+    var s=sessions(id)[i];var was=complete(id,s),bb=JR(id)?badges(id):null;
     var d=K.done[i]||(K.done[i]={});
     if(d[j])delete d[j];else d[j]=true;
     var on=!!d[j],now=complete(id,s);
     ui.pop=(!was&&now)?i:null;
+    ui.badge=null;
+    if(bb)badges(id).forEach(function(b,x){if(b.on&&!bb[x].on&&!ui.badge)ui.badge=b;});
     touch(id);render();
     if(on){
       try{if(navigator.vibrate)navigator.vibrate(12);}catch(e){}
