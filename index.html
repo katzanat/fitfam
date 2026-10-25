@@ -11,7 +11,7 @@
 :root{
   --bg:#EEF2F8; --surface:#FFFFFF; --surface-2:#F4F6FB; --ink:#141C33; --muted:#59627A;
   --line:#DCE2EE; --line-strong:#9AA6BF;
-  --shira:#E2335C; --yonatan:#2559F0; --mom:#8B3FD9; --dad:#0B7A54; --gold:#D98E00; --on-accent:#FFFFFF;
+  --shira:#E2335C; --yonatan:#2559F0; --mom:#8B3FD9; --dad:#0B7A54; --tamari:#C2410C; --gold:#D98E00; --on-accent:#FFFFFF;
   --accent:var(--shira);
   --accent-soft:color-mix(in srgb, var(--accent) 11%, var(--surface));
   color-scheme:light;
@@ -22,18 +22,19 @@
 :root[data-kid="yonatan"]{--accent:var(--yonatan)}
 :root[data-kid="mom"]{--accent:var(--mom)}
 :root[data-kid="dad"]{--accent:var(--dad)}
+:root[data-kid="tamari"]{--accent:var(--tamari)}
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --bg:#0C1222; --surface:#151D33; --surface-2:#1B2540; --ink:#EDF1FA; --muted:#9BA6BF;
     --line:#26314F; --line-strong:#5A6888;
-    --shira:#FF6E8C; --yonatan:#7A9EFF; --mom:#B98CFF; --dad:#3FD39A; --gold:#FFC23D; --on-accent:#0C1222;
+    --shira:#FF6E8C; --yonatan:#7A9EFF; --mom:#B98CFF; --dad:#3FD39A; --tamari:#FF9A5C; --gold:#FFC23D; --on-accent:#0C1222;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#0C1222; --surface:#151D33; --surface-2:#1B2540; --ink:#EDF1FA; --muted:#9BA6BF;
   --line:#26314F; --line-strong:#5A6888;
-  --shira:#FF6E8C; --yonatan:#7A9EFF; --mom:#B98CFF; --dad:#3FD39A; --gold:#FFC23D; --on-accent:#0C1222;
+  --shira:#FF6E8C; --yonatan:#7A9EFF; --mom:#B98CFF; --dad:#3FD39A; --tamari:#FF9A5C; --gold:#FFC23D; --on-accent:#0C1222;
   color-scheme:dark;
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -56,6 +57,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .kid[data-k="yonatan"] .dot{background:var(--yonatan)}
 .kid[data-k="mom"] .dot{background:var(--mom)}
 .kid[data-k="dad"] .dot{background:var(--dad)}
+.kid[data-k="tamari"] .dot{background:var(--tamari)}
 .kid[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .icon{width:46px;height:46px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center}
 .icon[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
@@ -354,12 +356,40 @@ PROGRAM.mom={
 };
 PROGRAM.dad=PROGRAM.mom;
 
-var KIDS={shira:{name:'Shira',c:'var(--shira)'},yonatan:{name:'Yonatan',c:'var(--yonatan)'},mom:{name:'Mom',c:'var(--mom)'},dad:{name:'Dad',c:'var(--dad)'}};
+/* Tamari (junior): short missions, stars instead of points, nothing counts as missed */
+PROGRAM.tamari={
+  A:[
+    [['rope','1 min of jumping, any way you like','Count your jumps out loud!'],['bridge','5 bridges','Lie on your back and lift your tummy up to the sky, like a bridge.'],['plank','Plank for 10 sec','Be a strong, straight board. Mom or Dad counts!'],['hang','Hang from the bar for 5 sec','A grown-up helps you reach the bar. Hang like a monkey!']],
+    [['rope','1 min of jumping','Try to jump without stopping!'],['birddog','4 per side','Reach out one arm and the other leg, like a flying superhero.'],['plank','Plank for 15 sec','Be a strong, straight board. Mom or Dad counts!'],['hang','2 × 8 sec','A grown-up helps you reach the bar. Hang like a monkey!']],
+    [['rope','2 min of jumping','Try to jump without stopping!'],['kneepush','5 push-ups','Knees on the floor, push the floor far away!'],['plank','Plank for 20 sec','Be a strong, straight board. Mom or Dad counts!'],['hang','2 × 10 sec','A grown-up helps you reach the bar. Hang like a monkey!']]
+  ],
+  B:[
+    [['jumpsquat','5 frog jumps','Squat down low like a frog, then jump!'],['calf','10 tiptoe rises','Stand up tall like a giraffe reaching for leaves.'],['squat','8 squats','Sit back like there is a tiny chair behind you.'],['rope','1 min of jumping','Try to jump without stopping!']],
+    [['jumpsquat','8 frog jumps','Squat down low like a frog, then jump!'],['lunge','4 per leg','Big giant steps!'],['calf','15 tiptoe rises','Stand up tall like a giraffe.'],['rope','2 × 1 min','Try to jump without stopping!']],
+    [['jumpsquat','10 frog jumps','Squat down low like a frog, then jump!'],['lunge','6 per leg','Big giant steps!'],['deadbug','5 per side','Lie on your back like a bug and slowly wiggle the opposite arm and leg.'],['rope','2 min of jumping','Try to jump without stopping!']]
+  ],
+  R:{
+    warm:'1 min walking like a giant, with big steps', cool:'1 min walking like a tiny mouse, then a big stretch',
+    cue:'Run with Mom or Dad. Stop whenever you want.',
+    weeks:['3 races to the corner and back','4 races to the corner and back','Tag with the family, 5 min','5 races, try to beat your time','Run 2 min without stopping','Tag with the family, 8 min','Run 3 min without stopping','Relay race with Shira and Yonatan','Run 4 min without stopping','Family race day: run 5 min!']
+  }
+};
+var WA={pts:'points',streak:'streak',wk:'Workout',done:'Workout complete',bonus:'Bonus for a full workout. See you next time.'};
+var WJ={pts:'stars',streak:'missions',wk:'Mission',done:'Mission complete!',bonus:'You did every move. Amazing!'};
+var TITLES_J={A:'Animal mission',B:'Jumping mission',R:'Race game'},SHORT_J={A:'Animals',B:'Jumps',R:'Race'};
+function JR(id){return !!KIDS[id].junior;}
+function word(id,k){return (JR(id)?WJ:WA)[k];}
+function title(id,t){return (JR(id)?TITLES_J:TITLES)[t];}
+function ptEx(id){return JR(id)?1:PT_EX;}
+function ptBonus(id){return JR(id)?2:PT_BONUS;}
+function perLevel(id){return JR(id)?12:PER_LEVEL;}
+
+var KIDS={shira:{name:'Shira',c:'var(--shira)'},yonatan:{name:'Yonatan',c:'var(--yonatan)'},tamari:{name:'Tamari',c:'var(--tamari)',junior:true},mom:{name:'Mom',c:'var(--mom)'},dad:{name:'Dad',c:'var(--dad)'}};
 var DAYN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 var TYPES=['A','R','B','R'];
 var TITLES={A:'Strength: pull and push',B:'Legs, jumping and shoulders',R:'Run'};
 var SHORT={A:'Strength',B:'Legs',R:'Run'};
-var PHASES={shira:['Foundation','Pulling strength','Toward the first pull-up'],yonatan:['Foundation','Volume','Strength'],mom:['Foundation','Building','Strength'],dad:['Foundation','Building','Strength']};
+var PHASES={shira:['Foundation','Pulling strength','Toward the first pull-up'],yonatan:['Foundation','Volume','Strength'],mom:['Foundation','Building','Strength'],dad:['Foundation','Building','Strength'],tamari:['Little monkey','Superhero','Champion']};
 var PER_LEVEL=150, PT_EX=10, PT_BONUS=25;
 
 /* ---------- dates ---------- */
@@ -431,7 +461,7 @@ function items(id,s){
 function doneMap(id,i){return state.kids[id].done[i]||{};}
 function doneCount(id,s){var d=doneMap(id,s.i);return items(id,s).filter(function(_,j){return d[j];}).length;}
 function complete(id,s){return doneCount(id,s)===items(id,s).length;}
-function points(id){var p=0;sessions(id).forEach(function(s){var c=doneCount(id,s);p+=c*PT_EX;if(c===items(id,s).length)p+=PT_BONUS;});return p;}
+function points(id){var p=0;sessions(id).forEach(function(s){var c=doneCount(id,s);p+=c*ptEx(id);if(c===items(id,s).length)p+=ptBonus(id);});return p;}
 function streak(id){
   var ss=sessions(id).filter(function(s){return s.date<=TODAY;}),n=0;
   for(var x=ss.length-1;x>=0;x--){var s=ss[x];if(complete(id,s))n++;else if(s.date===TODAY)continue;else break;}
@@ -471,15 +501,15 @@ function renderTop(){
   document.getElementById('kids').innerHTML=Object.keys(KIDS).map(function(k){
     return '<button class="kid" data-act="kid" data-k="'+k+'" aria-pressed="'+(k===id)+'"><span class="dot">'+(KIDS[k].i||KIDS[k].name[0])+'</span>'+KIDS[k].name+'</button>';
   }).join('');
-  var p=points(id),lvl=Math.floor(p/PER_LEVEL)+1,into=p%PER_LEVEL,w=curWeek(id);
+  var p=points(id),PL=perLevel(id),lvl=Math.floor(p/PL)+1,into=p%PL,w=curWeek(id);
   document.getElementById('jersey').innerHTML=
     '<div class="who">'+KIDS[id].name+'<small>Week '+w+' of 10</small></div>'+
     '<div class="num" aria-label="Level '+lvl+'">'+lvl+'</div>'+
-    '<div class="stats"><div class="stat"><b>'+p+'</b><span>points</span></div>'+
-    '<div class="stat"><b>'+streak(id)+'</b><span>streak</span></div>'+
+    '<div class="stats"><div class="stat"><b>'+p+'</b><span>'+word(id,'pts')+'</span></div>'+
+    '<div class="stat"><b>'+(JR(id)?totalDone(id):streak(id))+'</b><span>'+word(id,'streak')+'</span></div>'+
     '<div class="stat"><b>'+weekDone(id,w)+'/4</b><span>this week</span></div></div>'+
-    '<div class="lvbar"><i style="width:'+(into/PER_LEVEL*100)+'%"></i></div>'+
-    '<div class="next">Level '+lvl+'. '+(PER_LEVEL-into)+' points to level '+(lvl+1)+'</div>';
+    '<div class="lvbar"><i style="width:'+(into/PL*100)+'%"></i></div>'+
+    '<div class="next">Level '+lvl+'. '+(PL-into)+' '+word(id,'pts')+' to level '+(lvl+1)+'</div>';
   document.getElementById('gear').setAttribute('aria-pressed',ui.view==='settings');
   Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(t){
     if(t.dataset.v===ui.view)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current');
@@ -488,12 +518,12 @@ function renderTop(){
 
 function sessionView(id,s,fromPlan){
   var its=items(id,s),d=doneMap(id,s.i),c=doneCount(id,s),all=c===its.length;
-  var pts=c*PT_EX+(all?PT_BONUS:0);
+  var pts=c*ptEx(id)+(all?ptBonus(id):0);
   var h='';
   if(fromPlan)h+='<button class="backbtn" data-act="back">Back to today’s workout</button>';
-  h+='<div class="shead"><h2>'+TITLES[s.type]+'</h2><div class="meta">Workout '+(s.i+1)+' of 40, '+fmt(s.date)+(s.date===TODAY?' (today)':'')+'</div></div>';
-  if(all)h+='<div class="win'+(ui.pop===s.i?' pop':'')+'"><div class="pts">+'+PT_BONUS+'</div><div><b>Workout complete</b><span>Bonus for a full workout. See you next time.</span></div></div>';
-  h+='<div class="prow"><span>'+c+' of '+its.length+' exercises</span><span class="gold">'+pts+' points</span></div>';
+  h+='<div class="shead"><h2>'+title(id,s.type)+'</h2><div class="meta">'+word(id,'wk')+' '+(s.i+1)+' of 40, '+fmt(s.date)+(s.date===TODAY?' (today)':'')+'</div></div>';
+  if(all)h+='<div class="win'+(ui.pop===s.i?' pop':'')+'"><div class="pts">+'+ptBonus(id)+'</div><div><b>'+word(id,'done')+'</b><span>'+word(id,'bonus')+'</span></div></div>';
+  h+='<div class="prow"><span>'+c+' of '+its.length+' exercises</span><span class="gold">'+pts+' '+word(id,'pts')+'</span></div>';
   h+='<div class="pbar"><i style="width:'+(c/its.length*100)+'%"></i></div>';
   its.forEach(function(it,j){
     var e=EX[it[0]],on=!!d[j];
@@ -514,7 +544,7 @@ function viewToday(){
   if(!next)return '<div class="card"><h2>You finished 10 weeks</h2><p>'+totalDone(id)+' of 40 workouts done. Time for the 2-mile test.</p></div>';
   var first=ss[0].date>TODAY;
   return '<div class="card"><h2>'+(first?'The plan starts '+fmt(next.date):'Rest day today')+'</h2>'+
-    '<p>'+(first?'':'Rest builds muscle too. ')+'Next workout: '+fmt(next.date)+', '+TITLES[next.type]+'.</p>'+
+    '<p>'+(first?'':'Rest builds muscle too. ')+'Next workout: '+fmt(next.date)+', '+title(id,next.type)+'.</p>'+
     '<button class="btn" data-act="open" data-i="'+next.i+'">See the next workout</button></div>';
 }
 
@@ -528,9 +558,9 @@ function viewPlan(){
       h+='<div class="week'+(w===cw?' cur':'')+'"><div class="wl">Week '+w+'</div>';
       ss.filter(function(s){return s.week===w;}).forEach(function(s){
         var c=doneCount(id,s),n=items(id,s).length,cls='sp';
-        if(c===n)cls+=' done';else if(c>0)cls+=' part';else if(s.date<TODAY)cls+=' miss';
+        if(c===n)cls+=' done';else if(c>0)cls+=' part';else if(s.date<TODAY&&!JR(id))cls+=' miss';
         if(s.date===TODAY)cls+=' today';
-        h+='<button class="'+cls+'" data-act="open" data-i="'+s.i+'">'+SHORT[s.type]+'<small>'+DAYN[parse(s.date).getDay()]+' '+(parse(s.date).getMonth()+1)+'/'+parse(s.date).getDate()+'</small></button>';
+        h+='<button class="'+cls+'" data-act="open" data-i="'+s.i+'">'+(JR(id)?SHORT_J:SHORT)[s.type]+'<small>'+DAYN[parse(s.date).getDay()]+' '+(parse(s.date).getMonth()+1)+'/'+parse(s.date).getDate()+'</small></button>';
       });
       h+='</div>';
     }
@@ -542,10 +572,10 @@ function viewPlan(){
 function viewFamily(){
   var h='<div class="fam">';
   Object.keys(KIDS).forEach(function(k){
-    var p=points(k),lvl=Math.floor(p/PER_LEVEL)+1,w=curWeek(k),td=totalDone(k);
+    var p=points(k),lvl=Math.floor(p/perLevel(k))+1,w=curWeek(k),td=totalDone(k);
     h+='<div class="fc" style="--c:'+KIDS[k].c+'"><div class="nm">'+KIDS[k].name+'</div>'+
       '<div class="big">'+lvl+'<small>level</small></div>'+
-      '<dl><dt>Points</dt><dd>'+p+'</dd><dt>Streak</dt><dd>'+streak(k)+'</dd><dt>This week</dt><dd>'+weekDone(k,w)+'/4</dd><dt>Total</dt><dd>'+td+'/40</dd></dl>'+
+      '<dl><dt>'+(JR(k)?'Stars':'Points')+'</dt><dd>'+p+'</dd><dt>'+(JR(k)?'Missions':'Streak')+'</dt><dd>'+(JR(k)?td:streak(k))+'</dd><dt>This week</dt><dd>'+weekDone(k,w)+'/4</dd><dt>Total</dt><dd>'+td+'/40</dd></dl>'+
       '<div class="pbar"><i style="width:'+(td/40*100)+'%"></i></div></div>';
   });
   h+='</div><p class="note">Points reward showing up: every exercise you check off, plus a bonus for a full workout. Everyone competes with yesterday’s self, not with whoever is stronger.</p>';
@@ -593,7 +623,7 @@ document.addEventListener('click',function(ev){
     if(on){
       try{if(navigator.vibrate)navigator.vibrate(12);}catch(e){}
       var nb=document.querySelector('.check[data-i="'+i+'"][data-j="'+j+'"]');
-      if(nb){var f=document.createElement('span');f.className='float';f.textContent='+'+PT_EX;nb.appendChild(f);setTimeout(function(){f.remove();},1000);}
+      if(nb){var f=document.createElement('span');f.className='float';f.textContent='+'+ptEx(id);nb.appendChild(f);setTimeout(function(){f.remove();},1000);}
     }
     return;
   }
