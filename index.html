@@ -501,9 +501,12 @@ function sessions(id){
 function phaseOf(w){return w<=3?0:(w<=6?1:2);}
 function items(id,s){
   var P=PROGRAM[id];
-  if(s.type==='R'){var r=P.R,sp=r.speed&&s.i%4===3;return [['walk',r.warm],['run',(sp?r.speed:r.weeks)[s.week-1],sp?r.speedCue:r.cue],['walk',r.cool]];}
+  if(s.type==='R'){var r=P.R,sp=isSpeed(id,s);return [['walk',r.warm],['run',(sp?r.speed:r.weeks)[s.week-1],sp?r.speedCue:r.cue],['walk',r.cool]];}
   return P[s.type][phaseOf(s.week)];
 }
+var SPEED={t:'Run: stamina and speed',s:'Speed'};
+function isSpeed(id,s){return s.type==='R'&&!!PROGRAM[id].R.speed&&s.i%4===3;}
+function label(id,s){return isSpeed(id,s)?SPEED.t:title(id,s.type);}
 function doneMap(id,i){return state.kids[id].done[i]||{};}
 function doneCount(id,s){var d=doneMap(id,s.i);return items(id,s).filter(function(_,j){return d[j];}).length;}
 function complete(id,s){return doneCount(id,s)===items(id,s).length;}
@@ -567,7 +570,7 @@ function sessionView(id,s,fromPlan){
   var pts=c*ptEx(id)+(all?ptBonus(id):0);
   var h='';
   if(fromPlan)h+='<button class="backbtn" data-act="back">Back to today’s workout</button>';
-  h+='<div class="shead"><h2>'+title(id,s.type)+'</h2><div class="meta">'+word(id,'wk')+' '+(s.i+1)+' of 40, '+fmt(s.date)+(s.date===TODAY?' (today)':'')+'</div></div>';
+  h+='<div class="shead"><h2>'+label(id,s)+'</h2><div class="meta">'+word(id,'wk')+' '+(s.i+1)+' of 40, '+fmt(s.date)+(s.date===TODAY?' (today)':'')+'</div></div>';
   if(ui.badge)h+='<div class="win pop"><div class="pts">'+ui.badge.icon+'</div><div><b>'+BT.got+'</b><span>'+ui.badge.name+'</span></div></div>';
   if(all)h+='<div class="win'+(ui.pop===s.i?' pop':'')+'"><div class="pts">+'+ptBonus(id)+'</div><div><b>'+word(id,'done')+'</b><span>'+word(id,'bonus')+'</span></div></div>';
   h+='<div class="prow"><span>'+c+' of '+its.length+' exercises</span><span class="gold">'+pts+' '+word(id,'pts')+'</span></div>';
@@ -591,7 +594,7 @@ function viewToday(){
   if(!next)return '<div class="card"><h2>You finished 10 weeks</h2><p>'+totalDone(id)+' of 40 workouts done. Time for the 2-mile test.</p></div>';
   var first=ss[0].date>TODAY;
   return '<div class="card"><h2>'+(first?'The plan starts '+fmt(next.date):'Rest day today')+'</h2>'+
-    '<p>'+(first?'':'Rest builds muscle too. ')+'Next workout: '+fmt(next.date)+', '+title(id,next.type)+'.</p>'+
+    '<p>'+(first?'':'Rest builds muscle too. ')+'Next workout: '+fmt(next.date)+', '+label(id,next)+'.</p>'+
     '<button class="btn" data-act="open" data-i="'+next.i+'">See the next workout</button></div>';
 }
 
@@ -607,7 +610,7 @@ function viewPlan(){
         var c=doneCount(id,s),n=items(id,s).length,cls='sp';
         if(c===n)cls+=' done';else if(c>0)cls+=' part';else if(s.date<TODAY&&!JR(id))cls+=' miss';
         if(s.date===TODAY)cls+=' today';
-        h+='<button class="'+cls+'" data-act="open" data-i="'+s.i+'">'+(JR(id)?SHORT_J:SHORT)[s.type]+'<small>'+DAYN[parse(s.date).getDay()]+' '+(parse(s.date).getMonth()+1)+'/'+parse(s.date).getDate()+'</small></button>';
+        h+='<button class="'+cls+'" data-act="open" data-i="'+s.i+'">'+(isSpeed(id,s)?SPEED.s:(JR(id)?SHORT_J:SHORT)[s.type])+'<small>'+DAYN[parse(s.date).getDay()]+' '+(parse(s.date).getMonth()+1)+'/'+parse(s.date).getDate()+'</small></button>';
       });
       h+='</div>';
     }
