@@ -11,7 +11,7 @@
 :root{
   --bg:#EEF2F8; --surface:#FFFFFF; --surface-2:#F4F6FB; --ink:#141C33; --muted:#59627A;
   --line:#DCE2EE; --line-strong:#9AA6BF;
-  --shira:#E2335C; --yonatan:#2559F0; --gold:#D98E00; --on-accent:#FFFFFF;
+  --shira:#E2335C; --yonatan:#2559F0; --mom:#8B3FD9; --dad:#0B7A54; --gold:#D98E00; --on-accent:#FFFFFF;
   --accent:var(--shira);
   --accent-soft:color-mix(in srgb, var(--accent) 11%, var(--surface));
   color-scheme:light;
@@ -20,18 +20,20 @@
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
 :root[data-kid="yonatan"]{--accent:var(--yonatan)}
+:root[data-kid="mom"]{--accent:var(--mom)}
+:root[data-kid="dad"]{--accent:var(--dad)}
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --bg:#0C1222; --surface:#151D33; --surface-2:#1B2540; --ink:#EDF1FA; --muted:#9BA6BF;
     --line:#26314F; --line-strong:#5A6888;
-    --shira:#FF6E8C; --yonatan:#7A9EFF; --gold:#FFC23D; --on-accent:#0C1222;
+    --shira:#FF6E8C; --yonatan:#7A9EFF; --mom:#B98CFF; --dad:#3FD39A; --gold:#FFC23D; --on-accent:#0C1222;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#0C1222; --surface:#151D33; --surface-2:#1B2540; --ink:#EDF1FA; --muted:#9BA6BF;
   --line:#26314F; --line-strong:#5A6888;
-  --shira:#FF6E8C; --yonatan:#7A9EFF; --gold:#FFC23D; --on-accent:#0C1222;
+  --shira:#FF6E8C; --yonatan:#7A9EFF; --mom:#B98CFF; --dad:#3FD39A; --gold:#FFC23D; --on-accent:#0C1222;
   color-scheme:dark;
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -42,16 +44,18 @@ button{font:inherit;color:inherit;cursor:pointer}
 .disp{font-family:"Secular One","Assistant",Arial,sans-serif;font-weight:400}
 
 .app{max-width:560px;margin:0 auto;padding:12px 16px calc(96px + env(safe-area-inset-bottom,0px))}
-.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .brand{font-family:"Secular One",Arial,sans-serif;font-size:26px;line-height:1;margin:4px 0 12px;color:var(--ink);letter-spacing:.5px}
 .brand span{color:var(--accent)}
 .brandrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .lang{color:var(--accent);font-weight:700;text-decoration:none;padding:10px 4px;min-height:44px;display:inline-flex;align-items:center}
-.kids{display:flex;gap:8px}
+.kids{display:flex;gap:8px;flex-wrap:wrap}
 .kid{display:flex;align-items:center;gap:8px;border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 14px 4px 6px;font-weight:700;min-height:44px}
 .kid .dot{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:"Secular One",Arial,sans-serif;font-size:17px}
 .kid[data-k="shira"] .dot{background:var(--shira)}
 .kid[data-k="yonatan"] .dot{background:var(--yonatan)}
+.kid[data-k="mom"] .dot{background:var(--mom)}
+.kid[data-k="dad"] .dot{background:var(--dad)}
 .kid[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .icon{width:46px;height:46px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center}
 .icon[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
@@ -329,12 +333,33 @@ var PROGRAM={
   }
 };
 
-var KIDS={shira:{name:'Shira',c:'var(--shira)'},yonatan:{name:'Yonatan',c:'var(--yonatan)'}};
+/* adults: Mom and Dad share one plan, 5K run goal */
+var WARM_P='Warm-up: 3 min easy jumping or marching in place';
+PROGRAM.mom={
+  A:[
+    [['rope',WARM_P],['hang','3 × 20-30 sec'],['inclinepush','3 × 10'],['assisted','3 × 5'],['kneeraise','2 × 10'],['plank','3 × 30 sec'],['deadbug','2 × 8 per side']],
+    [['rope',WARM_P],['scap','2 × 8'],['negative','3 × 3, 5 sec lowering'],['pushup','3 × 6-10'],['dips','3 × 5'],['kneeraise','3 × 10'],['plank','3 × 45 sec']],
+    [['rope',WARM_P],['pullup','3 × max, assisted if needed'],['negative','2 × 3, 5 sec lowering'],['pushup','3 × 10-15'],['dips','3 × 8'],['legraise','3 × 6'],['sideplank','2 × 30 sec per side']]
+  ],
+  B:[
+    [['rope',WARM_P],['squat','3 × 15'],['lunge','2 × 8 per leg'],['bridge','3 × 12'],['calf','2 × 15'],['press','3 × 10'],['birddog','2 × 8 per side']],
+    [['rope',WARM_P],['split','3 × 8 per leg'],['squat','3 × 15, with mini band'],['bridge','3 × 12, single leg'],['press','3 × 12'],['sideplank','2 × 30 sec per side'],['rope','4 × 45 sec']],
+    [['rope',WARM_P],['split','3 × 10 per leg'],['jumpsquat','3 × 8'],['bandwalk','3 × 12 per side'],['press','3 × 12'],['hollow','3 × 20 sec'],['rope','5 × 60 sec']]
+  ],
+  R:{
+    warm:'5 min brisk walk', cool:'5 min walk and stretching',
+    cue:'Easy pace: you should be able to talk. A week felt too hard? Repeat it.',
+    weeks:['8 rounds: 1 min run, 1.5 min walk','6 rounds: 2 min run, 2 min walk','5 rounds: 3 min run, 1.5 min walk','4 rounds: 5 min run, 2 min walk','3 rounds: 8 min run, 2 min walk','2 rounds: 10 min run, 2 min walk','20 min continuous easy run','25 min continuous easy run','28 min continuous easy run','5K at a comfortable pace']
+  }
+};
+PROGRAM.dad=PROGRAM.mom;
+
+var KIDS={shira:{name:'Shira',c:'var(--shira)'},yonatan:{name:'Yonatan',c:'var(--yonatan)'},mom:{name:'Mom',c:'var(--mom)'},dad:{name:'Dad',c:'var(--dad)'}};
 var DAYN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 var TYPES=['A','R','B','R'];
 var TITLES={A:'Strength: pull and push',B:'Legs, jumping and shoulders',R:'Run'};
 var SHORT={A:'Strength',B:'Legs',R:'Run'};
-var PHASES={shira:['Foundation','Pulling strength','Toward the first pull-up'],yonatan:['Foundation','Volume','Strength']};
+var PHASES={shira:['Foundation','Pulling strength','Toward the first pull-up'],yonatan:['Foundation','Volume','Strength'],mom:['Foundation','Building','Strength'],dad:['Foundation','Building','Strength']};
 var PER_LEVEL=150, PT_EX=10, PT_BONUS=25;
 
 /* ---------- dates ---------- */
@@ -350,13 +375,13 @@ function fresh(){return {start:TODAY,days:[0,2,4,6],done:{}};}
 var state=null;
 try{state=JSON.parse(localStorage.getItem(KEY));}catch(e){state=null;}
 if(!state||!state.kids){state={active:'shira',kids:{shira:fresh(),yonatan:fresh()}};}
-['shira','yonatan'].forEach(function(k){if(!state.kids[k])state.kids[k]=fresh();});
+Object.keys(KIDS).forEach(function(k){if(!state.kids[k])state.kids[k]=fresh();});
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
 
 /* ---------- family sync (Supabase) ---------- */
 var SB_URL='https://ogxebejcedpteknqwkbb.supabase.co',SB_KEY='sb_publishable_6PX3Lh3Z4bwOrewKU8LBPw_K1LB9t-j',FAMILY='Z5L84jFi4UVbGMqkud4kVH5y';
 if(!state.pending)state.pending={};
-['shira','yonatan'].forEach(function(k){
+Object.keys(KIDS).forEach(function(k){
   var K=state.kids[k];
   if(K.ts===undefined){K.ts=1;if(Object.keys(K.done).length)state.pending[k]=true;}
 });
@@ -444,7 +469,7 @@ function renderTop(){
   var id=state.active;
   document.documentElement.setAttribute('data-kid',id);
   document.getElementById('kids').innerHTML=Object.keys(KIDS).map(function(k){
-    return '<button class="kid" data-act="kid" data-k="'+k+'" aria-pressed="'+(k===id)+'"><span class="dot">'+KIDS[k].name[0]+'</span>'+KIDS[k].name+'</button>';
+    return '<button class="kid" data-act="kid" data-k="'+k+'" aria-pressed="'+(k===id)+'"><span class="dot">'+(KIDS[k].i||KIDS[k].name[0])+'</span>'+KIDS[k].name+'</button>';
   }).join('');
   var p=points(id),lvl=Math.floor(p/PER_LEVEL)+1,into=p%PER_LEVEL,w=curWeek(id);
   document.getElementById('jersey').innerHTML=
